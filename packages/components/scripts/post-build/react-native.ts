@@ -973,7 +973,7 @@ const VARIANT_WEIGHT: Record<NonNullable<DBTextProps["variant"]>, string> = {
   subtle:   DBTypography.weightRegular,
   caption:  DBTypography.weightRegular,
   overline: DBTypography.weightMedium,
-  brand:    DBTypography.weightMedium,
+  brand:    DBTypography.weightBold,
   disabled: DBTypography.weightRegular,
 };
 
@@ -3086,8 +3086,9 @@ export default DBBadge;
 `,
 
   'brand/brand.tsx': `import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, StyleSheet } from "react-native";
 import { SvgXml } from "react-native-svg";
+import DBText from "../text/text";
 import { useDBFont } from "../../providers/font-provider";
 import { DBTheme } from "../../shared/tokens";
 import type { DBBrandProps } from "./model";
@@ -3113,9 +3114,9 @@ function DBBrand(props: DBBrandProps) {
             <View style={[styles.separator, { backgroundColor: c.border }]} />
           )}
           {props.text ? (
-            <Text style={[styles.productName, { color: c.text }]} allowFontScaling={false}>
+            <DBText weight="bold" style={[styles.productName, { color: c.text }]}>
               {props.text}
-            </Text>
+            </DBText>
           ) : props.children}
         </>
       )}
