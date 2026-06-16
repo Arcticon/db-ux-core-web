@@ -1844,6 +1844,14 @@ function DBTooltipFn(props: DBTooltipProps, component: any) {
           (trigger as React.ReactElement<any>).props?.onClick?.(e);
           show();
         },
+        onPointerEnter: (e: any) => {
+          (trigger as React.ReactElement<any>).props?.onPointerEnter?.(e);
+          show();
+        },
+        onPointerLeave: (e: any) => {
+          (trigger as React.ReactElement<any>).props?.onPointerLeave?.(e);
+          setVisible(false);
+        },
       })
     : trigger;
 
@@ -1871,7 +1879,7 @@ function DBTooltipFn(props: DBTooltipProps, component: any) {
   return (
     <View style={styles.container} ref={component}>
       {/* Strategy B: outer Pressable for non-interactive children (DBBadge etc.) */}
-      <Pressable onPress={show}>
+      <Pressable onPress={show} onPointerEnter={show} onPointerLeave={() => setVisible(false)}>
         <View ref={triggerRef} pointerEvents="box-none">
           {triggerWithHandler}
         </View>
