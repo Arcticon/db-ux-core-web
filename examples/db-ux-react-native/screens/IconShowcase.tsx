@@ -212,8 +212,20 @@ export default function IconShowcase() {
 				</View>
 			)}
 
-			<DBInfotext>DBInfotext Medium</DBInfotext>
-			<DBInfotext size="small">DBInfotext Small</DBInfotext>
+			<Section title={'DBInfotext'}>
+				<View style={styles.grid}>
+					<DBInfotext>Medium</DBInfotext>
+					<DBInfotext size="small">Small</DBInfotext>
+					<DBInfotext semantic="neutral">Neutral</DBInfotext>
+					<DBInfotext semantic="critical">Critical</DBInfotext>
+					<DBInfotext semantic="informational">
+						Informational
+					</DBInfotext>
+					<DBInfotext semantic="successful">Successful</DBInfotext>
+					<DBInfotext semantic="warning">Warning</DBInfotext>
+					<DBInfotext showIcon={false}>Without Icon</DBInfotext>
+				</View>
+			</Section>
 		</ScrollView>
 	);
 }
