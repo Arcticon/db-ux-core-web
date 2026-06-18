@@ -19,7 +19,8 @@ const transform = _require('css-to-react-native').default as (
 const REPO_ROOT = resolve(process.cwd(), '../..');
 
 const TMP_SRC = join(REPO_ROOT, 'output/tmp/react-native/react/src');
-const RN_DEST = join(REPO_ROOT, 'output/react-native/src');
+const RN_PKG_ROOT = join(REPO_ROOT, 'output/react-native');
+const RN_DEST = join(RN_PKG_ROOT, 'src');
 
 // Paths used by the CSS → StyleSheet pipeline
 const FOUNDATIONS_PKG = join(REPO_ROOT, 'packages/foundations');
@@ -1474,6 +1475,14 @@ import { useDBFont } from "../../providers/font-provider";
 import { DBTheme, DBTypography, DBSpacing, DBBorderRadius } from "../../shared/tokens";
 import { DBButtonProps } from "./model";
 
+function MIIcon({ name, size, color, style }: { name: string; size: number; color: string; style?: any }) {
+  const _mi = require("@expo/vector-icons/MaterialIcons");
+  const MaterialIcons = _mi.default ?? _mi;
+  // @expo/vector-icons MaterialIcons uses hyphenated names (e.g. arrow-forward, open-in-new)
+  const normalizedName = name.replace(/_/g, "-");
+  return <MaterialIcons name={normalizedName} size={size} color={color} style={style} accessibilityElementsHidden />;
+}
+
 function mkStyles(c: typeof DBTheme.light) {
   return {
     button: {
@@ -1510,6 +1519,20 @@ function DBButtonFn(props: DBButtonProps, component: any) {
 
   const label = props.text ?? props.children;
 
+  const isInverted = props.variant === "filled" || props.variant === "brand";
+  const isDisabled = Boolean(props.disabled);
+  const iconColor = isDisabled && !isInverted
+    ? c.textDisabled
+    : isInverted
+      ? c.bg
+      : c.text;
+  const iconSize = 18;
+
+  const leadingIcon = (props as any).iconLeading ?? (props as any).icon;
+  const showLeadingIcon = ((props as any).showIconLeading ?? (props as any).showIcon) !== false && Boolean(leadingIcon);
+  const trailingIcon = (props as any).iconTrailing;
+  const showTrailingIcon = (props as any).showIconTrailing !== false && Boolean(trailingIcon);
+
   return (
     <Pressable
       ref={component}
@@ -1528,18 +1551,24 @@ function DBButtonFn(props: DBButtonProps, component: any) {
         pressed && !Boolean(props.disabled) && { opacity: 0.75 },
       ]}
     >
+      {showLeadingIcon && (
+        <MIIcon name={leadingIcon} size={iconSize} color={iconColor} style={label ? { marginRight: DBSpacing.sm } : undefined} />
+      )}
       {typeof label === "string" ? (
         <DBText
           style={[
             styles.label,
-            (props.variant === "filled" || props.variant === "brand") && styles.labelInverted,
-            Boolean(props.disabled) && !(props.variant === "filled" || props.variant === "brand") && styles.labelDisabled,
+            isInverted && styles.labelInverted,
+            isDisabled && !isInverted && styles.labelDisabled,
           ]}
         >
           {label}
         </DBText>
       ) : (
         label
+      )}
+      {showTrailingIcon && (
+        <MIIcon name={trailingIcon} size={iconSize} color={iconColor} style={label ? { marginLeft: DBSpacing.sm } : undefined} />
       )}
     </Pressable>
   );
@@ -1777,15 +1806,9 @@ const DBDrawer = forwardRef<View, DBDrawerProps>(DBDrawerFn);
 export default DBDrawer;
 `,
 
-	/* ---- DBTooltip → expo-blur backdrop ---- */
-	'tooltip/tooltip.tsx': `import React, { forwardRef, useState, useRef } from "react";
-import {
-  Dimensions,
-  Modal,
-  View,
-  Pressable,
-  StyleSheet,
-} from "react-native";
+	/* ---- DBTooltip → inline anchored tooltip (no Modal to avoid hover flicker) ---- */
+	'tooltip/tooltip.tsx': `import React, { forwardRef, useState } from "react";
+import { View, StyleSheet } from "react-native";
 import DBText from "../text/text";
 import { useDBFont } from "../../providers/font-provider";
 import { DBTheme } from "../../shared/tokens";
@@ -1794,6 +1817,7 @@ import { DBTooltipProps } from "./model";
 type Placement = "top" | "bottom" | "left" | "right";
 
 const TIP_W = 220;
+const GAP = 6;
 
 function extractText(node: any): string {
   if (typeof node === "string") return node;
@@ -1808,10 +1832,6 @@ function DBTooltipFn(props: DBTooltipProps, component: any) {
   const { isDark } = useDBFont();
   const c = (isDark ? DBTheme.dark : DBTheme.light) as typeof DBTheme.light;
   const [visible, setVisible] = useState(false);
-  const triggerRef = useRef<View>(null);
-  const [pos, setPos] = useState({ x: 0, y: 0, w: 0, h: 0 });
-  // Actual measured tooltip height — starts at 0 so first layout fires reposition
-  const [tipH, setTipH] = useState(0);
 
   const childArray = React.Children.toArray(props.children);
   const trigger = childArray[0];
@@ -1822,17 +1842,10 @@ function DBTooltipFn(props: DBTooltipProps, component: any) {
     (props as any).text ??
     (childArray[1] ? extractText(childArray[1]) : "");
 
-  function show() {
-    if (!rawContent) return;
-    triggerRef.current
-      ? (triggerRef.current as any).measureInWindow((x: number, y: number, w: number, h: number) => {
-          setPos({ x, y, w, h });
-          setVisible(true);
-        })
-      : setVisible(true);
-  }
+  const show = () => setVisible(true);
+  const hide = () => setVisible(false);
 
-  // Strategy A: inject onPress/onClick for interactive children (DBButton etc.)
+  // Inject handlers for interactive children (DBButton etc.) so hover/press works.
   const triggerWithHandler = React.isValidElement(trigger)
     ? React.cloneElement(trigger as React.ReactElement<any>, {
         onPress: (e: any) => {
@@ -1850,61 +1863,51 @@ function DBTooltipFn(props: DBTooltipProps, component: any) {
         },
         onPointerLeave: (e: any) => {
           (trigger as React.ReactElement<any>).props?.onPointerLeave?.(e);
-          setVisible(false);
+          hide();
         },
       })
     : trigger;
 
   const placement: Placement = ((props as any).placement ?? "bottom") as Placement;
-  const { width: winW } = Dimensions.get("window");
-  const GAP = 6;
 
-  function positionStyle(measuredH: number) {
-    const h = measuredH || 36; // sensible fallback before first layout
-    const { x, y, w } = pos;
-    const cx = x + w / 2;
-    const left = Math.max(8, Math.min(cx - TIP_W / 2, winW - TIP_W - 8));
+  function positionStyle() {
     switch (placement) {
       case "top":
-        return { top: Math.max(8, pos.y - h - GAP), left };
+        return { bottom: "100%" as const, left: "50%" as const, marginLeft: -TIP_W / 2, marginBottom: GAP };
       case "left":
-        return { top: Math.max(8, pos.y + pos.h / 2 - h / 2), right: winW - x + GAP, maxWidth: TIP_W };
+        return { right: "100%" as const, top: 0, marginRight: GAP };
       case "right":
-        return { top: Math.max(8, pos.y + pos.h / 2 - h / 2), left: x + w + GAP, maxWidth: TIP_W };
+        return { left: "100%" as const, top: 0, marginLeft: GAP };
       default:
-        return { top: pos.y + pos.h + GAP, left };
+        return { top: "100%" as const, left: "50%" as const, marginLeft: -TIP_W / 2, marginTop: GAP };
     }
   }
 
   return (
     <View style={styles.container} ref={component}>
-      {/* Strategy B: outer Pressable for non-interactive children (DBBadge etc.) */}
-      <Pressable onPress={show} onPointerEnter={show} onPointerLeave={() => setVisible(false)}>
-        <View ref={triggerRef} pointerEvents="box-none">
-          {triggerWithHandler}
+      {/* The trigger wrapper handles hover (web) and the injected handlers cover press/click. */}
+      <View onPointerEnter={show} onPointerLeave={hide}>
+        {triggerWithHandler}
+      </View>
+      {visible && rawContent ? (
+        // Rendered as an absolutely-positioned sibling (NOT a Modal) with pointerEvents="none"
+        // so it can never capture the pointer and trigger an enter/leave flicker loop.
+        <View
+          style={[styles.tooltip, { backgroundColor: c.text, shadowColor: "#000" }, positionStyle()]}
+          pointerEvents="none"
+        >
+          <DBText style={[styles.tooltipText, { color: c.bg }]}>{rawContent}</DBText>
         </View>
-      </Pressable>
-      {rawContent ? (
-        <Modal visible={visible} transparent animationType="fade" onRequestClose={() => setVisible(false)}>
-          <Pressable style={StyleSheet.absoluteFillObject} onPress={() => setVisible(false)}>
-            <View
-              style={[styles.tooltip, { backgroundColor: c.text, shadowColor: "#000" }, positionStyle(tipH)]}
-              onLayout={(e) => setTipH(e.nativeEvent.layout.height)}
-              pointerEvents="none"
-            >
-              <DBText style={[styles.tooltipText, { color: c.bg }]}>{rawContent}</DBText>
-            </View>
-          </Pressable>
-        </Modal>
       ) : null}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { alignSelf: "flex-start" },
+  container: { alignSelf: "flex-start", position: "relative" },
   tooltip: {
     position: "absolute",
+    zIndex: 1000,
     borderRadius: 6,
     paddingHorizontal: 12,
     paddingVertical: 8,
@@ -3250,20 +3253,47 @@ import type { DBInfotextProps } from "./model";
 
 type SemanticKey = keyof typeof DBColorPalette;
 
+function MIIcon({ name, size, color }: { name: string; size: number; color: string }) {
+  const _mi = require("@expo/vector-icons/MaterialIcons");
+  const MaterialIcons = _mi.default ?? _mi;
+  // @expo/vector-icons MaterialIcons uses hyphenated names (e.g. info, error-outline)
+  const normalizedName = name.replace(/_/g, "-");
+  return <MaterialIcons name={normalizedName} size={size} color={color} accessibilityElementsHidden />;
+}
+
+// Maps the DB UX semantic to the default MaterialIcons icon name (mirrors the web variant-icons).
+const SEMANTIC_ICONS: Record<string, string> = {
+  critical: "error",
+  informational: "info",
+  neutral: "info",
+  adaptive: "info",
+  warning: "warning",
+  successful: "check-circle",
+};
+
 function DBInfotext(props: DBInfotextProps) {
   const { isDark } = useDBFont();
   const sem: SemanticKey = (props.semantic as SemanticKey) ?? "adaptive";
   const palette = (isDark ? DBColorPaletteDark : DBColorPalette)[sem as keyof typeof DBColorPaletteDark]
     ?? (isDark ? DBColorPaletteDark : DBColorPalette).neutral;
+
+  const showIcon = props.showIcon === undefined ? true : Boolean(props.showIcon);
+  const iconName = (props.icon as string | undefined) ?? SEMANTIC_ICONS[sem as string] ?? "info";
+  const iconColor = palette.weakText;
+  const fontSize = props.size === "small" ? DBTypography.size3XS : DBTypography.sizeXS;
+
   return (
     <View style={styles.container}>
-      <DBText style={[styles.text, { color: palette.weakText }]}>{props.text ?? props.children}</DBText>
+      {showIcon && iconName ? (
+        <MIIcon name={iconName} size={fontSize + 4} color={iconColor} />
+      ) : null}
+      <DBText style={[styles.text, { color: palette.weakText, fontSize }]}>{props.text ?? props.children}</DBText>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { paddingVertical: DBSpacing.xs },
+  container: { flexDirection: "row", alignItems: "center", gap: DBSpacing.xs, paddingVertical: DBSpacing.xs },
   text: { fontSize: DBTypography.sizeXS },
 });
 
@@ -4109,6 +4139,42 @@ export const getRootProps = (_props: any, _filter?: string[]): Record<string, un
 				console.log('  [index] appended DBFontProvider + DBColorPalette exports');
 			}
 		}
+
+		// -----------------------------------------------------------------------
+		// Write the package manifest so the output is a resolvable package
+		// (Metro/Expo and npm `file:` installs need a package.json at the root)
+		// -----------------------------------------------------------------------
+		let componentsVersion = '0.0.0';
+		try {
+			const componentsPkg = JSON.parse(
+				readFileSync(join(COMPONENTS_PKG, 'package.json'), 'utf-8')
+			);
+			componentsVersion = componentsPkg.version ?? componentsVersion;
+		} catch {
+			// fall back to default version if components package.json is unavailable
+		}
+		const rnPackageJson = {
+			name: '@db-ux/react-native-core-components',
+			version: componentsVersion,
+			description:
+				'React Native components out of DB UX Design System (Version 3)',
+			main: 'src/index.ts',
+			types: 'src/index.ts',
+			license: 'Apache-2.0',
+			peerDependencies: {
+				react: '*',
+				'react-native': '*',
+				'react-native-svg': '*',
+				'expo-font': '*'
+			},
+			private: true
+		};
+		writeFileSync(
+			join(RN_PKG_ROOT, 'package.json'),
+			JSON.stringify(rnPackageJson, null, 2) + '\n',
+			'utf-8'
+		);
+		console.log('  [package] package.json');
 
 		// -----------------------------------------------------------------------
 		// Post-process example files and purge spec/test files
