@@ -19,7 +19,8 @@ const transform = _require('css-to-react-native').default as (
 const REPO_ROOT = resolve(process.cwd(), '../..');
 
 const TMP_SRC = join(REPO_ROOT, 'output/tmp/react-native/react/src');
-const RN_DEST = join(REPO_ROOT, 'output/react-native/src');
+const RN_PKG_ROOT = join(REPO_ROOT, 'output/react-native');
+const RN_DEST = join(RN_PKG_ROOT, 'src');
 
 // Paths used by the CSS → StyleSheet pipeline
 const FOUNDATIONS_PKG = join(REPO_ROOT, 'packages/foundations');
