@@ -19,8 +19,7 @@ const transform = _require('css-to-react-native').default as (
 const REPO_ROOT = resolve(process.cwd(), '../..');
 
 const TMP_SRC = join(REPO_ROOT, 'output/tmp/react-native/react/src');
-const RN_PKG_ROOT = join(REPO_ROOT, 'output/react-native');
-const RN_DEST = join(RN_PKG_ROOT, 'src');
+const RN_DEST = join(REPO_ROOT, 'output/react-native/src');
 
 // Paths used by the CSS → StyleSheet pipeline
 const FOUNDATIONS_PKG = join(REPO_ROOT, 'packages/foundations');
@@ -755,7 +754,7 @@ export default function reactNative(_tmp?: boolean) {
 			// (foundations may not be built in the consumer's environment)
 			m = m.replace(
 				/import \{ IconTypes \} from '@db-ux\/core-foundations';\n?/g,
-				'/** Stub: icon name — use any string matching the DB icon set */\nexport type IconTypes = string;\n'
+				'import type { Icon } from "@expo/vector-icons/build/createIconSet";\n\ntype IconGlyphs<T> = T extends Icon<infer G, any> ? G : never;\nexport type IconTypes = IconGlyphs<typeof import("@expo/vector-icons/MaterialIcons").default>;\n'
 			);
 			m = m
 				.replace(/export type ClickEvent<T> = [^;]+;/, '')
