@@ -2577,71 +2577,418 @@ export default DBSelect;
 import { View, TextInput as RNTextInput } from "react-native";
 import DBText from "../text/text";
 import DBInfotext from "../infotext/infotext";
-import { DEFAULT_INVALID_MESSAGE, DEFAULT_VALID_MESSAGE } from "../../shared/constants";
+import {
+  DEFAULT_INVALID_MESSAGE,
+  DEFAULT_VALID_MESSAGE,
+} from "../../shared/constants";
 import { stringPropVisible } from "../../utils";
 import { useDBFont } from "../../providers/font-provider";
-import { DBTheme, DBColors, DBTypography, DBSpacing, DBBorderRadius } from "../../shared/tokens";
+import {
+  DBTheme,
+  DBColors,
+  DBTypography,
+  DBSpacing,
+  DBBorderRadius,
+  DBFontFamily,
+} from "../../shared/tokens";
 import { DBInputProps } from "./model";
+import { DBButton } from "../button";
+import { DBIcon } from "../icon";
 
-function mkStyles(c: typeof DBTheme.light) {
+function mkStyles(theme: typeof DBTheme.light) {
   return {
     container: { marginVertical: DBSpacing.xs },
-    label: { fontSize: DBTypography.size2XS, color: c.textMuted, marginBottom: DBSpacing.xs },
-    required: { color: c.brandPrimary },
-    input: { borderWidth: 1, borderColor: c.borderStrong, borderRadius: DBBorderRadius.sm, padding: 10, fontSize: DBTypography.sizeSM, backgroundColor: c.inputBg, color: c.text },
+    label: {
+      fontSize: DBTypography.size2XS,
+      color: theme.textMuted,
+      marginBottom: DBSpacing.xs,
+    },
+    required: { color: theme.brandPrimary },
+    input: {
+      borderWidth: 1,
+      borderColor: theme.borderStrong,
+      borderRadius: DBBorderRadius.sm,
+      padding: 10,
+      fontSize: DBTypography.sizeSM,
+      backgroundColor: theme.inputBg,
+      color: theme.text,
+    },
     focused: { borderColor: DBColors.informational.origin, borderWidth: 2 },
     invalid: { borderColor: DBColors.critical.origin },
     valid: { borderColor: DBColors.successful.origin },
-    disabled: { borderColor: c.textDisabled, backgroundColor: c.bgSurface, color: c.textDisabled },
-    description: { fontSize: DBTypography.size2XS, color: c.textSubtle, marginTop: DBSpacing.xs },
+    disabled: {
+      borderColor: theme.textDisabled,
+      backgroundColor: theme.bgSurface,
+      color: theme.textDisabled,
+    },
+    description: {
+      fontSize: DBTypography.size2XS,
+      color: theme.textSubtle,
+      marginTop: DBSpacing.xs,
+    },
+    selectedFileWrapper: {
+      flexDirection: "row" as const,
+      alignItems: "center" as const,
+      backgroundColor: DBColors.neutral[14],
+      paddingVertical: DBSpacing.md,
+      paddingHorizontal: DBSpacing.lg,
+      borderRadius: DBBorderRadius.md,
+      gap: DBSpacing.md,
+      alignSelf: "flex-start" as const,
+      boxShadow: "0 6px 10px 0 rgba(0, 0, 0, 0.1)",
+      height: 56,
+      flexGrow: 1,
+      flexShrink: 1,
+      inlineSize: "100%",
+    },
+    fileLabel: {
+      fontSize: DBTypography.sizeSM,
+      color: theme.text,
+      fontWeight: DBTypography.weightMedium,
+    },
+    labelDisabled: { color: theme.textDisabled },
+    filePickerLeadingIcon: {
+      color: DBTheme.light.text,
+      marginInlineEnd: 4,
+    },
+    filePickerTrailingIcon: {
+      color: DBTheme.light.text,
+      marginInlineEnd: 4,
+    },
   };
 }
 
 function DBInputFn(props: DBInputProps, component: any) {
   const { isDark } = useDBFont();
-  const c = (isDark ? DBTheme.dark : DBTheme.light) as typeof DBTheme.light;
+  const theme = (isDark ? DBTheme.dark : DBTheme.light) as typeof DBTheme.light;
   const [value, setValue] = useState(String(props.value ?? ""));
   const [focused, setFocused] = useState(false);
   const isInvalid = props.validation === "invalid";
-  const isValid = !!(props.validMessage ?? props.validation === "valid") && props.validation === "valid";
+  const isValid =
+    !!(props.validMessage ?? props.validation === "valid") &&
+    props.validation === "valid";
 
-  useEffect(() => { setValue(String(props.value ?? "")); }, [props.value]);
+  useEffect(() => {
+    setValue(String(props.value ?? ""));
+  }, [props.value]);
 
-  const styles = mkStyles(c);
+  const styles = mkStyles(theme);
+  const showIcon = props.showIconLeading ?? props.showIcon;
+  const showIconTrailing = props.showIconTrailing;
+  const textStyle = {
+    ...(Boolean(props.disabled) &&
+      !(props.variant === "filled" || props.variant === "brand") &&
+      styles.labelDisabled),
+  };
 
   return (
     <View style={styles.container} ref={component}>
       {props.label && (
         <DBText style={styles.label}>
-          {props.label}{props.required && <DBText style={styles.required}> *</DBText>}
+          {props.label}
+          {props.required && <DBText style={styles.required}> *</DBText>}
         </DBText>
       )}
-      <RNTextInput
-        style={[styles.input, focused && styles.focused, isInvalid && styles.invalid, isValid && styles.valid, Boolean(props.disabled) && styles.disabled]}
-        value={value}
-        onChangeText={(t) => { setValue(t); if (props.onChange) (props.onChange as any)({ target: { value: t } }); }}
-        placeholder={String(props.placeholder ?? "")}
-        placeholderTextColor={c.textSubtle}
-        editable={!Boolean(props.disabled)}
-        secureTextEntry={props.type === "password"}
-        keyboardType={props.type === "email" ? "email-address" : props.type === "number" || props.type === "tel" ? "numeric" : "default"}
-        maxLength={typeof props.maxLength === "number" ? props.maxLength : undefined}
-        accessibilityLabel={props.label ?? props.placeholder}
-        onFocus={() => { setFocused(true); if (props.onFocus) (props.onFocus as any)(); }}
-        onBlur={() => { setFocused(false); if (props.onBlur) (props.onBlur as any)(); }}
-      />
-      {(props as any).description && <DBText style={styles.description}>{(props as any).description}</DBText>}
-      {stringPropVisible(props.message, props.showMessage) && (
-        <DBInfotext size="small" semantic="adaptive">{props.message}</DBInfotext>
+      {props.type === "file" ? (
+        props.value ? (
+          <View
+            style={{
+              gap: DBSpacing.md,
+            }}>
+            <View style={styles.selectedFileWrapper}>
+              {showIcon && (
+                <DBIcon
+                  icon={props.iconLeading ?? props.icon}
+                  weight="24"
+                  style={[styles.filePickerLeadingIcon]}
+                />
+              )}
+              <DBText
+                style={[styles.fileLabel, textStyle]}
+                numberOfLines={1}
+                ellipsizeMode="middle">
+                {props.value}
+              </DBText>
+              <DBButton variant="ghost" onClick={props.onClearFile}>
+                <DBIcon icon="close" weight="24" />
+              </DBButton>
+            </View>
+            {props.fileTooLargeText && (
+              <DBText
+                style={[
+                  styles.label,
+                  textStyle,
+                  { color: DBColors.brand.origin },
+                ]}>
+                {props.fileTooLargeText}
+              </DBText>
+            )}
+          </View>
+        ) : (
+          <DBButton variant={props.variant} onClick={props.onFilePick}>
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                gap: DBSpacing.md,
+              }}>
+              {showIcon && (
+                <DBIcon
+                  icon={props.iconLeading ?? props.icon}
+                  weight="24"
+                  style={[styles.filePickerTrailingIcon]}
+                />
+              )}
+              <DBText
+                weight="bold"
+                style={{
+                  fontFamily: DBFontFamily.bold,
+                  fontSize: 16,
+                  color: DBTheme.light.bg,
+                }}>
+                {props.placeholder}
+              </DBText>
+              {showIconTrailing && (
+                <DBIcon
+                  icon={props.iconTrailing}
+                  style={[styles.filePickerTrailingIcon]}
+                />
+              )}
+            </View>
+          </DBButton>
+        )
+      ) : (
+        <RNTextInput
+          style={[
+            styles.input,
+            focused && styles.focused,
+            isInvalid && styles.invalid,
+            isValid && styles.valid,
+            Boolean(props.disabled) && styles.disabled,
+            props.inputStyle,
+          ]}
+          value={value}
+          onChangeText={(t) => {
+            setValue(t);
+            if (props.onChange)
+              (props.onChange as any)({ target: { value: t } });
+          }}
+          placeholder={String(props.placeholder ?? "")}
+          placeholderTextColor={theme.textSubtle}
+          editable={!Boolean(props.disabled)}
+          secureTextEntry={props.type === "password"}
+          keyboardType={
+            props.type === "email"
+              ? "email-address"
+              : props.type === "number" || props.type === "tel"
+                ? "numeric"
+                : "default"
+          }
+          maxLength={
+            typeof props.maxLength === "number" ? props.maxLength : undefined
+          }
+          accessibilityLabel={props.label ?? props.placeholder}
+          onFocus={() => {
+            setFocused(true);
+            if (props.onFocus) (props.onFocus as any)();
+          }}
+          onBlur={() => {
+            setFocused(false);
+            if (props.onBlur) (props.onBlur as any)();
+          }}
+        />
       )}
-      {isValid && <DBInfotext size="small" semantic="successful">{props.validMessage ?? DEFAULT_VALID_MESSAGE}</DBInfotext>}
-      {isInvalid && <DBInfotext size="small" semantic="critical">{props.invalidMessage ?? DEFAULT_INVALID_MESSAGE}</DBInfotext>}
+      {(props as any).description && (
+        <DBText style={styles.description}>{(props as any).description}</DBText>
+      )}
+      {stringPropVisible(props.message, props.showMessage) && (
+        <DBInfotext size="small" semantic="adaptive">
+          {props.message}
+        </DBInfotext>
+      )}
+      {isValid && (
+        <DBInfotext size="small" semantic="successful">
+          {props.validMessage ?? DEFAULT_VALID_MESSAGE}
+        </DBInfotext>
+      )}
+      {isInvalid && (
+        <DBInfotext size="small" semantic="critical">
+          {props.invalidMessage ?? DEFAULT_INVALID_MESSAGE}
+        </DBInfotext>
+      )}
     </View>
   );
 }
 
 const DBInput = forwardRef<RNTextInput, DBInputProps>(DBInputFn);
 export default DBInput;
+`,
+
+	'input/model.ts': `import {
+  ChangeEventProps,
+  ChangeEventState,
+  FocusEventProps,
+  FocusEventState,
+  FormMessageProps,
+  FormProps,
+  FormSizeProps,
+  FormState,
+  FormTextProps,
+  FromValidState,
+  GlobalProps,
+  GlobalState,
+  IconLeadingProps,
+  IconProps,
+  IconTrailingProps,
+  InputEventProps,
+  InputEventState,
+  ShowIconLeadingProps,
+  ShowIconProps,
+  ShowIconTrailingProps,
+  SizeType,
+  ValueLabelType,
+} from "../../shared/model";
+import { ButtonVariantType } from "../button/model";
+export const InputTypeList = [
+  "color",
+  "date",
+  "datetime-local",
+  "email",
+  "file",
+  \/\/ TODO: move this to own component
+  "hidden",
+  "month",
+  "number",
+  "password",
+  "range",
+  \/\/ TODO: move this to own component
+  "search",
+  "tel",
+  "text",
+  "time",
+  "url",
+  "week",
+] as const;
+export type InputTypeType = (typeof InputTypeList)[number];
+export type DBInputDefaultProps = {
+  /**
+   * Set a [data list](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/datalist) via attribute instead of children.
+   */
+  dataList?: string[] | ValueLabelType[];
+  /**
+   * Add a custom id to [data list](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/datalist) if you"re using \`dataList\` attribute.
+   */
+  dataListId?: string;
+  /**
+   * The size of the message infotext. Defaults to "small".
+   */
+  messageSize?: SizeType;
+  /**
+   * The size of the valid message infotext. Defaults to "small".
+   */
+  validMessageSize?: SizeType;
+  /**
+   * The size of the invalid message infotext. Defaults to "small".
+   */
+  invalidMessageSize?: SizeType;
+  /**
+   *
+   */
+  inputStyle?: Record<string, any>;
+};
+type FileInputProps = DBInputDefaultProps &
+  Omit<FormMessageProps, "variant"> & {
+    /**
+     * 	Type of form control
+     */
+    type: Extract<InputTypeType, "file">;
+    onFilePick: () => void;
+    onClearFile: () => void;
+    fileTooLargeText?: string;
+    variant?: ButtonVariantType;
+  };
+type NonFileInputProps = DBInputDefaultProps &
+  InputEventProps<HTMLInputElement> &
+  ChangeEventProps<HTMLInputElement> &
+  FocusEventProps<HTMLInputElement> &
+  FormMessageProps & {
+    onFilePick?: never;
+    onClearFile?: never;
+    fileTooLargeText?: never;
+    /**
+     * Specifies the types of files that the server accepts (for). https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/file#accept
+     */
+    accept?: string;
+    /**
+     * Allow selecting multiple files. https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/input/file#multiple
+     */
+    multiple?: boolean | string;
+    /**
+     * 	Type of form control
+     */
+    type?: Exclude<InputTypeType, "file">;
+    /**
+     * Maximum value
+     */
+    max?: number | string;
+    /**
+     * Minimum value
+     */
+    min?: number | string;
+    /**
+     * Pattern the value must match to be valid
+     */
+    pattern?: string;
+    /**
+     * Sets [step value](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/step).
+     */
+    step?: number | string;
+    /**
+     * Hint for [virtual keyboard](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/inputmode) selection.
+     */
+    inputmode?:
+      | "none"
+      | "text"
+      | "decimal"
+      | "numeric"
+      | "tel"
+      | "search"
+      | "email"
+      | "url";
+    /**
+     * Hint for the [enter key behavior](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/enterkeyhint) on virtual keyboards.
+     */
+    enterkeyhint?:
+      | "enter"
+      | "done"
+      | "go"
+      | "next"
+      | "previous"
+      | "search"
+      | "send";
+  };
+export type DBInputProps = (FileInputProps | NonFileInputProps) &
+  GlobalProps &
+  FormTextProps &
+  FormProps &
+  IconProps &
+  IconTrailingProps &
+  ShowIconProps &
+  IconLeadingProps &
+  ShowIconLeadingProps &
+  ShowIconTrailingProps &
+  FormSizeProps;
+export type DBInputDefaultState = {
+  _dataListId?: string;
+  getDataList: () => ValueLabelType[];
+};
+export type DBInputState = DBInputDefaultState &
+  GlobalState &
+  InputEventState<HTMLInputElement> &
+  ChangeEventState<HTMLInputElement> &
+  FocusEventState<HTMLInputElement> &
+  FormState &
+  FromValidState;
 `,
 
 	/* ---- DBTextarea → TextInput multiline ---- */
