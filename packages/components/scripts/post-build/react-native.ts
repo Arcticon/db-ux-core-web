@@ -2421,7 +2421,7 @@ function DBRadioFn(props: DBRadioProps, component: any) {
 
   function handlePress() {
     if (Boolean(props.disabled)) return;
-    if (props.onChange) (props.onChange as any)({ target: { checked: true, value: "on" } });
+    if (props.onChange) (props.onChange as any)({ target: { checked: true, value: props.value } });
   }
 
   return (
