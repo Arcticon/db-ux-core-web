@@ -5,7 +5,7 @@
 
 React Native + Expo components for the [DB UX Design System v3](https://design-system.deutschebahn.com/), generated from the [core-web](https://github.com/db-ux-design-system/core-web) monorepo Mitosis sources via a custom post-build transformation pipeline.
 
-All 37 components are hand-authored React Native implementations — no HTML elements, no CSS class names, no DOM APIs.
+All 38 components are hand-authored React Native implementations — no HTML elements, no CSS class names, no DOM APIs.
 
 ---
 
@@ -159,6 +159,7 @@ import { DBButton, DBInput, DBCard } from '@db-ux/react-native-core-components';
 | `DBButton`         | Primary action button          | Haptic feedback via `expo-haptics` |
 | `DBCustomButton`   | Unstyled/custom button         | Haptic feedback via `expo-haptics` |
 | `DBInput`          | Text input field               | `TextInput`                    |
+| `DBDatepicker`     | Calendar date picker           | `Modal` + `Pressable`          |
 | `DBTextarea`       | Multi-line text input          | `TextInput` multiline          |
 | `DBCheckbox`       | Checkbox                       | Custom animated checkbox       |
 | `DBRadio`          | Radio button group             | Custom radio                   |
@@ -219,6 +220,8 @@ To regenerate the output after changing Mitosis sources or the post-build script
 
 ```bash
 npm -w @db-ux/core-components run compile:react-native
+cd output/react-native
+npx tsc
 ```
 
 ---
@@ -250,6 +253,9 @@ npm install --ignore-scripts
 
 # Generate the React Native output
 npm -w @db-ux/core-components run compile:react-native
+
+cd output/react-native
+npx tsc
 
 # Output is now in output/react-native/src/
 ```

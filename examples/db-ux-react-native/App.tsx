@@ -22,6 +22,7 @@ import IconShowcase from "./screens/IconShowcase";
 import HeaderShowcase from "./screens/HeaderShowcase";
 import SelectShowcase from "./screens/SelectShowcase";
 import StructureShowcase from "./screens/StructureShowcase";
+import DatepickerShowcase from "./screens/DatepickerShowcase";
 
 const SCREENS = [
   { key: "button", label: "Button", component: ButtonShowcase },
@@ -41,6 +42,7 @@ const SCREENS = [
   { key: "header", label: "Header", component: HeaderShowcase },
   { key: "drawer", label: "Drawer", component: DrawerShowcase },
   { key: "select", label: "Select", component: SelectShowcase },
+  { key: "datepicker", label: "Datepicker", component: DatepickerShowcase },
   { key: "structure", label: "Section", component: StructureShowcase },
   { key: "overlay", label: "Overlay", component: OverlayShowcase },
 ] as const;
@@ -135,7 +137,7 @@ function AppInner({ onToggleScheme }: { onToggleScheme: () => void }) {
           <DBIconToggle
             options={[
               { icon: "light_mode", value: "light", label: "Light mode" },
-              { icon: "dark_mode",  value: "dark",  label: "Dark mode"  },
+              { icon: "dark_mode", value: "dark", label: "Dark mode" },
             ]}
             value={isDark ? "dark" : "light"}
             onChange={(v) => { if ((v === "dark") !== isDark) onToggleScheme(); }}
