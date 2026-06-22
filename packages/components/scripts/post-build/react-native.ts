@@ -1369,6 +1369,33 @@ const DBIcon = forwardRef<View, DBIconProps>(DBIconFn);
 export default DBIcon;
 `,
 
+	'icon/model.ts': `import type { StyleProp, TextStyle } from "react-native";
+import {
+  GlobalProps,
+  GlobalState,
+  IconProps,
+  TextProps,
+} from "../../shared/model";
+
+export const IconWeightList = ["16", "20", "24", "32", "48", "64"] as const;
+export type IconWeightType = (typeof IconWeightList)[number];
+export type DBIconDefaultProps = {
+  variant?: string;
+  weight?: IconWeightType;
+  style?: StyleProp<TextStyle>;
+};
+export type DBIconProps = DBIconDefaultProps &
+  GlobalProps &
+  IconProps &
+  TextProps;
+export type DBIconDefaultState = {};
+export type DBIconState = DBIconDefaultState & GlobalState;
+export type UnderscoreToDash<S extends string> =
+  S extends \`\${infer Head}_\${infer Tail}\`
+    ? \`\${Head}-\${UnderscoreToDash<Tail>}\`
+    : S;
+`,
+
 	/* ---- DBLink → expo-linking ---- */
 	'link/link.tsx': `import React, { forwardRef } from "react";
 import { Pressable, Text, View } from "react-native";
@@ -1472,8 +1499,14 @@ export default DBLink;
 import { Pressable, View } from "react-native";
 import DBText from "../text/text";
 import { useDBFont } from "../../providers/font-provider";
-import { DBTheme, DBTypography, DBSpacing, DBBorderRadius } from "../../shared/tokens";
+import {
+  DBTheme,
+  DBTypography,
+  DBSpacing,
+  DBBorderRadius,
+} from "../../shared/tokens";
 import { DBButtonProps } from "./model";
+import { DBIcon } from "../icon";
 
 function MIIcon({ name, size, color, style }: { name: string; size: number; color: string; style?: any }) {
   const _mi = require("@expo/vector-icons/MaterialIcons");
@@ -1500,10 +1533,20 @@ function mkStyles(c: typeof DBTheme.light) {
     ghost: { borderColor: "transparent" },
     brand: { backgroundColor: c.brandPrimary, borderColor: c.brandPrimary },
     buttonDisabled: { opacity: 0.4 },
-    fullWidth: { width: "100%" as const },
-    label: { fontSize: DBTypography.sizeSM, color: c.text, fontWeight: DBTypography.weightMedium },
+    fullWidth: {
+      flexGrow: 1,
+      flexShrink: 1,
+      inlineSize: "100%",
+    },
+    label: {
+      fontSize: DBTypography.sizeSM,
+      color: c.text,
+      fontWeight: DBTypography.weightMedium,
+    },
     labelInverted: { color: c.bg },
     labelDisabled: { color: c.textDisabled },
+    showIcon: { marginInlineEnd: 4 },
+    showIconTrailing: { marginInlineStart: 4 },
   };
 }
 
