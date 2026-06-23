@@ -42,11 +42,11 @@ export default function LinkShowcase() {
       <Section title="Inline (no arrow, sits in text)">
         <DBText style={[styles.bodyText, { color: c.body }]}>
           Learn more at the{" "}
-          <DBLink content="inline">design system docs</DBLink>
-          {" "}or read the{" "}
-          <DBLink variant="adaptive" content="inline">adaptive inline link</DBLink>
-          {" "}and the{" "}
-          <DBLink variant="brand" content="inline">brand inline link</DBLink>.
+          <DBLink variant="inline">design system docs</DBLink>
+          {"\ "}or read the{"\ "}
+          <DBLink variant="inline">adaptive inline link</DBLink>
+          {"\ "}and the{"\ "}
+          <DBLink variant="inline">brand inline link</DBLink>.
         </DBText>
       </Section>
 
@@ -59,10 +59,10 @@ export default function LinkShowcase() {
 
       <DBDivider />
 
-      <Section title="With leading icon">
-        <DBLink icon="download">Download PDF</DBLink>
-        <DBLink icon="phone" variant="adaptive">Call support</DBLink>
-        <DBLink icon="mail" variant="brand">Send email</DBLink>
+      <Section title="With icon indicator">
+        <DBLink showIcon>Default with icon</DBLink>
+        <DBLink variant="adaptive" showIcon>Adaptive with icon</DBLink>
+        <DBLink variant="brand" showIcon>Brand with icon</DBLink>
       </Section>
     </ScrollView>
   );

@@ -14,7 +14,7 @@ type Width = "small" | "medium" | "large" | "full";
 
 function DBSectionCard({ label }: { label: string }) {
   const c = useScreenColors();
-  return <DBCard elevationLevel={2}><DBText style={{ color: c.heading, fontWeight: "600" }}>{label}</DBText></DBCard>;
+  return <DBCard elevationLevel="2"><DBText style={{ color: c.heading, fontWeight: "600" }}>{label}</DBText></DBCard>;
 }
 
 function Demo({ label, density, spacing, width }: { label: string; density?: Density; spacing?: Spacing; width?: Width }) {
@@ -44,14 +44,14 @@ export default function StructureShowcase() {
       <Demo label="large" width="large" spacing="medium" density="regular" />
       <Demo label="full (default)" spacing="medium" density="regular" />
 
-      <DBDivider style={{ marginVertical: 20 }} />
+      <View style={{ marginVertical: 20 }}><DBDivider /></View>
 
       <DBText style={[styles.group, { color: c.heading }]}>density (gap between cards)</DBText>
       <Demo label="functional — 8px" width="medium" spacing="medium" density="functional" />
       <Demo label="regular — 16px" width="medium" spacing="medium" density="regular" />
       <Demo label="expressive — 24px" width="medium" spacing="medium" density="expressive" />
 
-      <DBDivider style={{ marginVertical: 20 }} />
+      <View style={{ marginVertical: 20 }}><DBDivider /></View>
 
       <DBText style={[styles.group, { color: c.heading }]}>spacing (padding around group)</DBText>
       <Demo label="none" width="medium" spacing="none" density="regular" />
@@ -59,7 +59,7 @@ export default function StructureShowcase() {
       <Demo label="medium" width="medium" spacing="medium" density="regular" />
       <Demo label="large" width="medium" spacing="large" density="regular" />
 
-      <DBDivider style={{ marginVertical: 20 }} />
+      <View style={{ marginVertical: 20 }}><DBDivider /></View>
 
       <DBText style={[styles.group, { color: c.heading }]}>Composition</DBText>
       <DBText style={[styles.demoLabel, { color: c.muted, paddingHorizontal: 0, marginBottom: 4 }]}>Side by side</DBText>
@@ -86,7 +86,7 @@ export default function StructureShowcase() {
         </DBSection>
       </View>
 
-      <DBDivider style={{ marginVertical: 20 }} />
+      <View style={{ marginVertical: 20 }}><DBDivider /></View>
 
       <DBText style={[styles.group, { color: c.heading }]}>DBDivider</DBText>
       <View style={{ paddingHorizontal: 20 }}>

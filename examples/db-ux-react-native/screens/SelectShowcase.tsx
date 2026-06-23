@@ -58,11 +58,21 @@ const MONTHS = [
 
 export default function SelectShowcase() {
   const c = useScreenColors();
-  const [trainClass, setTrainClass] = useState("");
+  // Separate states so each section is independent
+  const [trainClassSheet, setTrainClassSheet] = useState("");
+  const [trainClassDropdown, setTrainClassDropdown] = useState("");
+  const [trainClassFullscreen, setTrainClassFullscreen] = useState("");
   const [origin, setOrigin] = useState("");
   const [destination, setDestination] = useState("");
-  const [months, setMonths] = useState<string>("");
+  const [months, setMonths] = useState<string[]>([]);
+  const [radioCity, setRadioCity] = useState("");
   const [nativeMonth, setNativeMonth] = useState("");
+
+  function handleOriginChange(v: any) {
+    const val = Array.isArray(v) ? v[0] ?? "" : String(v);
+    setOrigin(val);
+    if (val && val === destination) setDestination("");
+  }
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -73,13 +83,13 @@ export default function SelectShowcase() {
           label="Train class"
           placeholder="Choose a train type…"
           options={TRAIN_CLASSES}
-          values={trainClass}
-          onOptionSelected={(v: any) => setTrainClass(String(v))}
+          values={trainClassSheet}
+          onOptionSelected={(v: any) => setTrainClassSheet(Array.isArray(v) ? v[0] ?? "" : String(v))}
         />
-        {trainClass ? (
+        {trainClassSheet ? (
           <View style={styles.result}>
             <DBText variant="label" style={{ color: c.muted }}>Selected: </DBText>
-            <DBBadge semantic="informational">{trainClass}</DBBadge>
+            <DBBadge semantic="informational">{TRAIN_CLASSES.find((t) => t.value === trainClassSheet)?.label ?? trainClassSheet}</DBBadge>
           </View>
         ) : null}
       </Section>
@@ -91,11 +101,11 @@ export default function SelectShowcase() {
           options={MONTHS}
           multiple
           values={months}
-          onOptionSelected={(v: any) => setMonths(String(v))}
+          onOptionSelected={(v: any) => setMonths(Array.isArray(v) ? v : String(v).split(",").filter(Boolean))}
         />
-        {months ? (
+        {months.length > 0 ? (
           <View style={[styles.result, { flexWrap: "wrap" }]}>
-            {months.split(",").map((m) => (
+            {months.map((m) => (
               <DBBadge key={m} semantic="successful">{MONTHS.find((x) => x.value === m)?.label ?? m}</DBBadge>
             ))}
           </View>
@@ -110,21 +120,21 @@ export default function SelectShowcase() {
           placeholder="Departure city…"
           options={CITIES}
           values={origin}
-          onOptionSelected={(v: any) => setOrigin(String(v))}
+          onOptionSelected={handleOriginChange}
         />
         <DBCustomSelect
           label="To"
           placeholder="Arrival city…"
-          options={CITIES.filter((c) => c.value !== origin)}
+          options={CITIES.filter((city) => city.value !== origin)}
           values={destination}
-          onOptionSelected={(v: any) => setDestination(String(v))}
+          onOptionSelected={(v: any) => setDestination(Array.isArray(v) ? v[0] ?? "" : String(v))}
         />
         {origin && destination && (
           <View style={[styles.result, { gap: 6 }]}>
             <DBText variant="body" style={{ color: c.body }}>
-              {CITIES.find((c) => c.value === origin)?.label}
+              {CITIES.find((city) => city.value === origin)?.label}
               {" → "}
-              {CITIES.find((c) => c.value === destination)?.label}
+              {CITIES.find((city) => city.value === destination)?.label}
             </DBText>
           </View>
         )}
@@ -132,14 +142,65 @@ export default function SelectShowcase() {
 
       <DBDivider />
 
-      <Section title="DBSelect — native picker">
+      <Section title="DBSelect — native/web dropdown (forced)">
         <DBSelect
-          label="Month (native)"
+          label="Month (forced dropdown)"
           placeholder="Select a month…"
           options={MONTHS.map((m) => m.label)}
           value={nativeMonth}
+          forceDropdown
           onChange={(v: any) => setNativeMonth(String(v))}
         />
+      </Section>
+
+      <Section title="DBSelect — fullscreen picker (forced)">
+        <DBSelect
+          label="Month (forced fullscreen)"
+          placeholder="Select a month…"
+          options={MONTHS.map((m) => m.label)}
+          value={nativeMonth}
+          forceFullscreen
+          onChange={(v: any) => setNativeMonth(String(v))}
+        />
+      </Section>
+
+      <Section title="DBCustomSelect — dropdown (forced, e.g. for web)">
+        <DBCustomSelect
+          label="Train class (forced dropdown)"
+          placeholder="Choose a train type…"
+          options={TRAIN_CLASSES}
+          values={trainClassDropdown}
+          forceDropdown
+          onOptionSelected={(v: any) => setTrainClassDropdown(Array.isArray(v) ? v[0] ?? "" : String(v))}
+        />
+      </Section>
+
+      <Section title="DBCustomSelect — fullscreen (forced)">
+        <DBCustomSelect
+          label="Train class (forced fullscreen)"
+          placeholder="Choose a train type…"
+          options={TRAIN_CLASSES}
+          values={trainClassFullscreen}
+          forceFullscreen
+          onOptionSelected={(v: any) => setTrainClassFullscreen(Array.isArray(v) ? v[0] ?? "" : String(v))}
+        />
+      </Section>
+
+      <Section title="DBCustomSelect — radio fullscreen (single, forced)">
+        <DBCustomSelect
+          label="Departure city"
+          placeholder="Choose a city…"
+          options={CITIES}
+          values={radioCity}
+          forceFullscreen
+          onOptionSelected={(v: any) => setRadioCity(Array.isArray(v) ? v[0] ?? "" : String(v))}
+        />
+        {radioCity ? (
+          <View style={styles.result}>
+            <DBText variant="label" style={{ color: c.muted }}>Selected: </DBText>
+            <DBBadge semantic="informational">{CITIES.find((city) => city.value === radioCity)?.label ?? radioCity}</DBBadge>
+          </View>
+        ) : null}
       </Section>
 
       <Section title="DBCustomSelect — disabled">
