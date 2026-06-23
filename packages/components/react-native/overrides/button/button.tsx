@@ -5,6 +5,14 @@ import { useDBFont } from "../../providers/font-provider";
 import { DBTheme, DBTypography, DBSpacing, DBBorderRadius } from "../../shared/tokens";
 import { DBButtonProps } from "./model";
 
+function MIIcon({ name, size, color, style }: { name: string; size: number; color: string; style?: any }) {
+  const _mi = require("@expo/vector-icons/MaterialIcons");
+  const MaterialIcons = _mi.default ?? _mi;
+  // @expo/vector-icons MaterialIcons uses hyphenated names (e.g. arrow-forward, open-in-new)
+  const normalizedName = name.replace(/_/g, "-");
+  return <MaterialIcons name={normalizedName} size={size} color={color} style={style} accessibilityElementsHidden />;
+}
+
 function mkStyles(c: typeof DBTheme.light) {
   return {
     button: {
@@ -41,7 +49,22 @@ function DBButtonFn(props: DBButtonProps, component: any) {
 
   const label = props.text ?? props.children;
 
-  return (
+  const isInverted = props.variant === "filled" || props.variant === "brand";
+  const isDisabled = Boolean(props.disabled);
+  const iconColor = isDisabled && !isInverted
+		? c.textDisabled
+		: isInverted
+			? c.bg
+			: c.text;
+  const iconSize = 18;
+
+  const leadingIcon = (props as any).iconLeading ?? (props as any).icon;
+  const showLeadingIcon = ((props as any).showIconLeading ?? (props as any).showIcon) !== false && Boolean(leadingIcon);
+  const trailingIcon = (props as any).iconTrailing;
+  const showTrailingIcon = (props as any).showIconTrailing !== false && Boolean(trailingIcon);
+
+
+	return (
     <Pressable
       ref={component}
       onPress={handlePress}
@@ -59,6 +82,9 @@ function DBButtonFn(props: DBButtonProps, component: any) {
         pressed && !Boolean(props.disabled) && { opacity: 0.75 },
       ]}
     >
+		{showLeadingIcon && (
+			<MIIcon name={leadingIcon} size={iconSize} color={iconColor} style={label ? { marginRight: DBSpacing.sm } : undefined} />
+		)}
       {typeof label === "string" ? (
         <DBText
           style={[
@@ -71,6 +97,9 @@ function DBButtonFn(props: DBButtonProps, component: any) {
         </DBText>
       ) : (
         label
+      )}
+      {showTrailingIcon && (
+        <MIIcon name={trailingIcon} size={iconSize} color={iconColor} style={label ? { marginLeft: DBSpacing.sm } : undefined} />
       )}
     </Pressable>
   );
