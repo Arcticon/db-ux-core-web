@@ -1,8 +1,10 @@
 import React, { useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
 import {
-  DBInput, DBButton,
+  DBInput,
+  DBButton,
   DBText,
+  DBDivider,
 } from "@db-ux/react-native-core-components";
 import { useScreenColors } from "./theme";
 
@@ -28,99 +30,152 @@ export default function InputShowcase() {
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <DBText style={[styles.heading, { color: c.heading }]}>DBInput</DBText>
+		<ScrollView contentContainerStyle={styles.container}>
+			<DBText style={[styles.heading, { color: c.heading }]}>
+				DBInput
+			</DBText>
 
-      <Section title="Basic">
-        <DBInput label="Name" placeholder="Enter your name" />
-        <DBInput label="Email" type="email" placeholder="you@example.com" />
-        <DBInput label="Password" type="password" placeholder="••••••••" />
-      </Section>
+			<Section title="Basic">
+				<DBInput label="Name" placeholder="Enter your name" />
+				<DBInput
+					label="Email"
+					type="email"
+					placeholder="you@example.com"
+				/>
+				<DBInput
+					label="Password"
+					type="password"
+					placeholder="••••••••"
+				/>
+			</Section>
 
-      <Section title="With Description">
-        <DBInput
-          label="Username"
-          placeholder="john_doe"
-          message="Must be unique. Letters, numbers and underscores only."
-          showMessage
-        />
-      </Section>
+			<Section title="With Description">
+				<DBInput
+					label="Username"
+					placeholder="john_doe"
+					message="Must be unique. Letters, numbers and underscores only."
+					showMessage
+				/>
+			</Section>
 
-      <Section title="Required Field">
-        <DBInput label="Full Name" required placeholder="First and last name" />
-      </Section>
+			<Section title="Required Field">
+				<DBInput
+					label="Full Name"
+					required
+					placeholder="First and last name"
+				/>
+			</Section>
 
-      <Section title="Validation States">
-        <DBInput
-          label="Valid field"
-          value="valid@example.com"
-          validation="valid"
-          validMessage="Looks good!"
-        />
-        <DBInput
-          label="Invalid field"
-          value="not-an-email"
-          validation="invalid"
-          invalidMessage="Please enter a valid email address."
-        />
-      </Section>
+			<Section title="Validation States">
+				<DBInput
+					label="Valid field"
+					value="valid@example.com"
+					validation="valid"
+					validMessage="Looks good!"
+				/>
+				<DBInput
+					label="Invalid field"
+					value="not-an-email"
+					validation="invalid"
+					invalidMessage="Please enter a valid email address."
+				/>
+			</Section>
 
-      <Section title="Disabled">
-        <DBInput label="Disabled input" value="Cannot be edited" disabled />
-      </Section>
+			<Section title="Disabled">
+				<DBInput
+					label="Disabled input"
+					value="Cannot be edited"
+					disabled
+				/>
+			</Section>
 
-      <Section title="Interactive Form">
-        <DBInput
-          label="Name"
-          placeholder="Your name"
-          value={name}
-          onChange={(e: any) => setName(e?.target?.value ?? e)}
-          required
-          validation={submitted && !name ? "invalid" : undefined}
-          invalidMessage="Name is required."
-        />
-        <DBInput
-          label="Email"
-          type="email"
-          placeholder="you@example.com"
-          value={email}
-          onChange={(e: any) => setEmail(e?.target?.value ?? e)}
-          required
-          validation={
-            submitted
-              ? !email
-                ? "invalid"
-                : email.includes("@")
-                  ? "valid"
-                  : "invalid"
-              : undefined
-          }
-          validMessage="Valid email!"
-          invalidMessage="Please enter a valid email."
-        />
-        <DBInput
-          label="Password"
-          type="password"
-          placeholder="Min. 8 characters"
-          value={password}
-          onChange={(e: any) => setPassword(e?.target?.value ?? e)}
-          required
-          validation={
-            submitted ? (password.length >= 8 ? "valid" : "invalid") : undefined
-          }
-          validMessage="Strong password!"
-          invalidMessage="Password must be at least 8 characters."
-        />
-        <View style={styles.buttonRow}>
-          <DBButton variant="brand" onClick={handleSubmit} width="full">
-            Submit
-          </DBButton>
-        </View>
-        {submitted && name && email.includes("@") && password.length >= 8 && (
-          <DBText style={styles.success}>Form submitted successfully!</DBText>
-        )}
-      </Section>
-    </ScrollView>
+			<Section title="Interactive Form">
+				<DBInput
+					label="Name"
+					placeholder="Your name"
+					value={name}
+					onChange={(e: any) => setName(e?.target?.value ?? e)}
+					required
+					validation={submitted && !name ? 'invalid' : undefined}
+					invalidMessage="Name is required."
+				/>
+				<DBInput
+					label="Email"
+					type="email"
+					placeholder="you@example.com"
+					value={email}
+					onChange={(e: any) => setEmail(e?.target?.value ?? e)}
+					required
+					validation={
+						submitted
+							? !email
+								? 'invalid'
+								: email.includes('@')
+									? 'valid'
+									: 'invalid'
+							: undefined
+					}
+					validMessage="Valid email!"
+					invalidMessage="Please enter a valid email."
+				/>
+				<DBInput
+					label="Password"
+					type="password"
+					placeholder="Min. 8 characters"
+					value={password}
+					onChange={(e: any) => setPassword(e?.target?.value ?? e)}
+					required
+					validation={
+						submitted
+							? password.length >= 8
+								? 'valid'
+								: 'invalid'
+							: undefined
+					}
+					validMessage="Strong password!"
+					invalidMessage="Password must be at least 8 characters."
+				/>
+				<View style={styles.buttonRow}>
+					<DBButton
+						variant="brand"
+						onClick={handleSubmit}
+						width="full">
+						Submit
+					</DBButton>
+				</View>
+				{submitted &&
+					name &&
+					email.includes('@') &&
+					password.length >= 8 && (
+						<DBText style={styles.success}>
+							Form submitted successfully!
+						</DBText>
+					)}
+			</Section>
+
+			<DBDivider />
+
+			<Section title="Type">
+				<DBInput
+					label="file"
+					placeholder="file"
+					type="file"
+					onClearFile={() => {}}
+					onFilePick={() => {}}
+				/>
+				<DBInput
+					required
+					label="Zip-Datei"
+					placeholder="Datei auswählen"
+					type="file"
+					variant="filled"
+					showIcon
+					icon="folder-zip"
+					onClearFile={() => {}}
+					onFilePick={() => {}}
+				/>
+			</Section>
+		</ScrollView>
   );
 }
 
