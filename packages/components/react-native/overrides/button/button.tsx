@@ -58,10 +58,14 @@ function DBButtonFn(props: DBButtonProps, component: any) {
 			: c.text;
   const iconSize = 18;
 
+  const showIconTrailing = Boolean((props as any).showIconTrailing);
   const leadingIcon = (props as any).iconLeading ?? (props as any).icon;
-  const showLeadingIcon = ((props as any).showIconLeading ?? (props as any).showIcon) !== false && Boolean(leadingIcon);
-  const trailingIcon = (props as any).iconTrailing;
-  const showTrailingIcon = (props as any).showIconTrailing !== false && Boolean(trailingIcon);
+  const showLeadingIcon =
+    ((props as any).showIconLeading ?? (props as any).showIcon) !== false &&
+    !showIconTrailing &&
+    Boolean(leadingIcon);
+  const trailingIcon = (props as any).iconTrailing ?? (props as any).icon;
+  const showTrailingIcon = showIconTrailing && Boolean(trailingIcon);
 
 
 	return (
