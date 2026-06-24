@@ -24,6 +24,7 @@ import SelectShowcase from "./screens/SelectShowcase";
 import StructureShowcase from "./screens/StructureShowcase";
 import DatepickerShowcase from "./screens/DatepickerShowcase";
 import NotificationShowcase from "./screens/NotificationShowcase";
+import RadioShowcase from "./screens/RadioShowcase";
 
 const SCREENS = [
   { key: "button", label: "Button", component: ButtonShowcase },
@@ -47,6 +48,7 @@ const SCREENS = [
   { key: "datepicker", label: "Datepicker", component: DatepickerShowcase },
   { key: "structure", label: "Section", component: StructureShowcase },
   { key: "overlay", label: "Overlay", component: OverlayShowcase },
+  { key: "radio", label: "Radio", component: RadioShowcase },
 ] as const;
 
 type ScreenKey = (typeof SCREENS)[number]["key"];
