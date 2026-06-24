@@ -23,6 +23,7 @@ import HeaderShowcase from "./screens/HeaderShowcase";
 import SelectShowcase from "./screens/SelectShowcase";
 import StructureShowcase from "./screens/StructureShowcase";
 import DatepickerShowcase from "./screens/DatepickerShowcase";
+import NotificationShowcase from "./screens/NotificationShowcase";
 
 const SCREENS = [
   { key: "button", label: "Button", component: ButtonShowcase },
@@ -39,6 +40,7 @@ const SCREENS = [
   { key: "icon", label: "Icon", component: IconShowcase },
   { key: "tabs", label: "Tabs", component: TabsShowcase },
   { key: "navigation", label: "Navigation", component: NavigationShowcase },
+  { key: "notification", label: "Notification", component: NotificationShowcase },
   { key: "header", label: "Header", component: HeaderShowcase },
   { key: "drawer", label: "Drawer", component: DrawerShowcase },
   { key: "select", label: "Select", component: SelectShowcase },
