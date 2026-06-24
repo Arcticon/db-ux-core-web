@@ -57,6 +57,11 @@ export default function ButtonShowcase() {
         </View>
       </Section>
 
+      <Section title="With Icons">
+        <DBButton icon='edit' showIconLeading>Leading Icon</DBButton>
+        <DBButton icon='edit' showIconTrailing>Trailing Icon</DBButton>
+      </Section>
+
       {pressCount > 0 && (
         <DBText style={styles.counter}>Pressed {pressCount} time{pressCount !== 1 ? "s" : ""} 🎉</DBText>
       )}
