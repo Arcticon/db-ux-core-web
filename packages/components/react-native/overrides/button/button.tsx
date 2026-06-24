@@ -2,8 +2,14 @@ import React, { forwardRef } from "react";
 import { Pressable, View } from "react-native";
 import DBText from "../text/text";
 import { useDBFont } from "../../providers/font-provider";
-import { DBTheme, DBTypography, DBSpacing, DBBorderRadius } from "../../shared/tokens";
+import {
+  DBTheme,
+  DBTypography,
+  DBSpacing,
+  DBBorderRadius,
+} from "../../shared/tokens";
 import { DBButtonProps } from "./model";
+import { DBIcon } from "../icon";
 
 function mkStyles(c: typeof DBTheme.light) {
   return {
@@ -22,10 +28,20 @@ function mkStyles(c: typeof DBTheme.light) {
     ghost: { borderColor: "transparent" },
     brand: { backgroundColor: c.brandPrimary, borderColor: c.brandPrimary },
     buttonDisabled: { opacity: 0.4 },
-    fullWidth: { width: "100%" as const },
-    label: { fontSize: DBTypography.sizeSM, color: c.text, fontWeight: DBTypography.weightMedium },
+    fullWidth: {
+      flexGrow: 1,
+      flexShrink: 1,
+      inlineSize: "100%",
+    },
+    label: {
+      fontSize: DBTypography.sizeSM,
+      color: c.text,
+      fontWeight: DBTypography.weightMedium,
+    },
     labelInverted: { color: c.bg },
     labelDisabled: { color: c.textDisabled },
+    showIcon: { marginInlineEnd: 4 },
+    showIconTrailing: { marginInlineStart: 4 },
   };
 }
 
